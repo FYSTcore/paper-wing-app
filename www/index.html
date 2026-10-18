@@ -6,14 +6,11 @@
 <meta name="google" content="notranslate">
 <title>Paper Wing</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #0b0918; color: #8d8ca3; font: 600 13px/1.4 system-ui, sans-serif; }
-  body { display: grid; place-items: center; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd27a; animation: p 1s ease-in-out infinite; }
-  @keyframes p { 50% { opacity: .2; transform: scale(.6); } }
+  /* v3.0.5: düz siyah — oyunun FYST açılışıyla aynı renk, arada yükleme noktası görünmesin */
+  html, body { margin: 0; height: 100%; background: #000; }
 </style>
 </head>
 <body>
-<div class="dot" aria-label="Loading"></div>
 <script>
 /* Başlatıcı: oyunun canlı sürümü siteden açılır (her güncelleme kendiliğinden gelir).
  * İnternet yoksa: daha önce site bir kez açıldıysa yine siteye gidilir (sitenin service worker'ı çevrimdışı açar);

@@ -2,7 +2,7 @@
   "appId": "io.github.fystcore.paperwing",
   "appName": "Paper Wing",
   "webDir": "www",
-  "backgroundColor": "#0b0918",
+  "backgroundColor": "#000000",
   "server": {
     "androidScheme": "https",
     "allowNavigation": [
@@ -10,7 +10,7 @@
     ]
   },
   "android": {
-    "backgroundColor": "#0b0918",
+    "backgroundColor": "#000000",
     "allowMixedContent": false
   },
   "plugins": {
