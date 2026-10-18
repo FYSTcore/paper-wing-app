@@ -5,10 +5,18 @@
   "backgroundColor": "#0b0918",
   "server": {
     "androidScheme": "https",
-    "allowNavigation": ["fystcore.github.io"]
+    "allowNavigation": [
+      "fystcore.github.io"
+    ]
   },
   "android": {
     "backgroundColor": "#0b0918",
     "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "disable",
+      "initialViewportFitValueHint": "cover"
+    }
   }
 }
