@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="google" content="notranslate">
+<title>Paper Wing</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0918; color: #8d8ca3; font: 600 13px/1.4 system-ui, sans-serif; }
+  body { display: grid; place-items: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd27a; animation: p 1s ease-in-out infinite; }
+  @keyframes p { 50% { opacity: .2; transform: scale(.6); } }
+</style>
+</head>
+<body>
+<div class="dot" aria-label="Loading"></div>
+<script>
+/* Başlatıcı: oyunun canlı sürümü siteden açılır (her güncelleme kendiliğinden gelir).
+ * İnternet yoksa: daha önce site bir kez açıldıysa yine siteye gidilir (sitenin service worker'ı çevrimdışı açar);
+ * hiç açılmadıysa uygulamanın içine gömülü kopya açılır (ilk açılış internetsiz de çalışır). */
+(function () {
+  var SITE = 'https://fystcore.github.io/paper-wing/';
+  var seen = false; try { seen = localStorage.getItem('pw.siteSeen') === '1'; } catch (e) { /* yoksay */ }
+  var done = false;
+  function go(url) { if (done) return; done = true; location.replace(url); }
+  var ctl = window.AbortController ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ctl) ctl.abort(); go(seen ? SITE : 'game/index.html#app'); }, 2500);
+  fetch(SITE + 'sw.js?app=' + Date.now(), { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+    .then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw new Error(r.status);
+      try { localStorage.setItem('pw.siteSeen', '1'); } catch (e) { /* yoksay */ }
+      go(SITE);
+    })
+    .catch(function () { clearTimeout(timer); go(seen ? SITE : 'game/index.html#app'); });
+})();
+</script>
+</body>
+</html>

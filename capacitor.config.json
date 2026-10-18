@@ -1,0 +1,14 @@
+{
+  "appId": "io.github.fystcore.paperwing",
+  "appName": "Paper Wing",
+  "webDir": "www",
+  "backgroundColor": "#0b0918",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["fystcore.github.io"]
+  },
+  "android": {
+    "backgroundColor": "#0b0918",
+    "allowMixedContent": false
+  }
+}

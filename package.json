@@ -1,0 +1,12 @@
+{
+  "name": "paper-wing-app",
+  "version": "2.6.0",
+  "private": true,
+  "description": "Paper Wing Android uygulaması (Capacitor). Oyun FYSTcore/paper-wing deposundan derleme sırasında alınır.",
+  "devDependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/assets": "^3.0.5"
+  }
+}
