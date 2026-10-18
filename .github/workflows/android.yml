@@ -1,0 +1,102 @@
+# Paper Wing Android derlemesi. Actions sekmesinde "Build Android" → "Run workflow" ile başlatılır.
+# Oyun her derlemede FYSTcore/paper-wing deposundan alınır ve uygulamanın içine gömülür (internetsiz ilk açılış için).
+# Uygulama açılınca internet varsa oyunun canlı sürümünü siteden açar → oyun güncellemeleri için yeni APK gerekmez.
+name: Build Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Sürüm adı (ör. 2.6.0)"
+        required: true
+        default: "2.6.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Uygulama deposu
+        uses: actions/checkout@v4
+
+      - name: Oyun deposu (FYSTcore/paper-wing)
+        uses: actions/checkout@v4
+        with:
+          repository: FYSTcore/paper-wing
+          path: game-src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Bağımlılıklar
+        run: npm install --no-audit --no-fund
+
+      - name: Oyunu uygulamaya göm
+        run: |
+          rm -rf www/game && mkdir -p www/game
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'editor.html' game-src/ www/game/
+          ls www/game
+
+      - name: Android projesi
+        run: |
+          npx cap add android
+          cp android-overrides/MainActivity.java android/app/src/main/java/io/github/fystcore/paperwing/MainActivity.java
+          sed -i 's|android:name=".MainActivity"|android:name=".MainActivity" android:screenOrientation="portrait"|' android/app/src/main/AndroidManifest.xml
+          npx capacitor-assets generate --android
+          npx cap sync android
+
+      - name: Sürüm numarası
+        run: |
+          VC=$((100 + GITHUB_RUN_NUMBER))
+          sed -i "s/versionCode [0-9]*/versionCode $VC/" android/app/build.gradle
+          sed -i "s/versionName \".*\"/versionName \"${{ inputs.version_name }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+
+      - name: İmza anahtarı
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "::error::KEYSTORE_B64 sırrı eksik (Settings → Secrets and variables → Actions)"; exit 1; fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/signing.keystore"
+
+      - name: Derle (APK + AAB)
+        working-directory: android
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/signing.keystore" \
+            -Pandroid.injected.signing.store.password="$KS_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS"
+          mkdir -p ../out
+          cp app/build/outputs/apk/release/*.apk ../out/paper-wing.apk
+          cp app/build/outputs/bundle/release/*.aab ../out/paper-wing.aab
+
+      - name: Dosyaları sakla
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-wing-${{ inputs.version_name }}
+          path: out/
+
+      - name: Sürüm sayfası (indirme bağlantısı)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version_name }}
+          name: Paper Wing ${{ inputs.version_name }}
+          files: |
+            out/paper-wing.apk
+            out/paper-wing.aab
+          body: |
+            APK: telefona kurulacak dosya. AAB: Play Store'a yüklenecek dosya.
